@@ -1,0 +1,2 @@
+class CloudflareException(Exception):
+    pass
