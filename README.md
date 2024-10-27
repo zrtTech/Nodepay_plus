@@ -25,7 +25,6 @@ Cheapest [proxies and servers](https://teletype.in/@web3enjoyer/4a2G9NuHssy) whi
 ### Options 📧
 
 1. CREATE ACCOUNTS:
- - In `data/config.py` put `REGISTER_ACCOUNT_ONLY = True`
  - Throw the api key. Since there is a captcha there, you need a service for solving captchas - [AntiCaptcha](http://getcaptchasolution.com/t8yfysqmh3) or [Twocaptcha](https://2captcha.com/?from=12939391).
  - Provide emails and passwords and proxies to register accounts as below!
 
@@ -39,7 +38,7 @@ Cheapest [proxies and servers](https://teletype.in/@web3enjoyer/4a2G9NuHssy) whi
 
 1. Accounts Setup 🔒
 
-   Put in `data/accounts.txt` accounts in format email:password (cool_aster@gmail.com:My_password123!) 
+   Put in `accounts.txt` accounts in format email:password (cool_aster@gmail.com:My_password123!) 
    For password: Big letter, small letter, number, special character and at least 8 symbols
    
    ![image](https://img3.teletype.in/files/63/b4/63b417ed-d9fb-4aa5-b8a4-1b96e46a57f7.png)
