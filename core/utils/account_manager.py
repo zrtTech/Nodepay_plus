@@ -75,7 +75,7 @@ class AccountManager:
             logger.info(f"Stopping process for {email}")
             return None
         
-        max_retries = 15
+        max_retries = 5
         retry_count = 0
         
         while retry_count < max_retries and not self.should_stop:
@@ -92,13 +92,10 @@ class AccountManager:
                         res = await client.register(ref_code, self.captcha_service)
 
                         if not res.get("success"):
-                            logger.error(f'{email} | Registration failed | {res['msg']}')
+                            logger.error(f'{email} | Registration failed | {res["msg"]}')
                             with open('failed_accounts.txt', 'a') as f:
                                 f.write(f'{email}:{password}\n')
                             return
-
-                        with open('data/ref_codes.txt', 'a') as f:
-                            f.write(f'{res['data']['referral_code']}\n')
 
                         uid, access_token = await client.login(self.captcha_service)
                         await client.activate(access_token)
@@ -122,22 +119,22 @@ class AccountManager:
                             user_agent=user_agent,
                             proxy_url=proxy_url
                         )
-                    return True  # Successful mining
+                    return True
             except CloudflareException as e:
-                logger.error(f'{email} | Cloudflare error | {e}')
-                retry_count += 1
+                logger.error(f'{email} | {e} error | Delaying...')
+                await asyncio.sleep(10 * 60)
             except Exception as e:
                 error_message = str(e).lower()
                 if "curl: (7)" in error_message or "cloudflare" in error_message:
                     logger.error(f'{email} | Proxy failed: {proxy_url} | {e}')
-                    retry_count += 1
                 elif "unauthorized" in error_message or "token is not valid" in error_message:
                     logger.warning(f"{email} | invalid token, attempting to refresh")
-                    retry_count += 1
                 else:
                     logger.error(f'{email} | {action.capitalize()} error | {e}')
                     return False
             finally:
+                retry_count += 1
+
                 if client:
                     await client.safe_close()
                 await release_proxy(proxy_url)
@@ -146,7 +143,7 @@ class AccountManager:
                 logger.info(f"{email} | stopping process")
                 return None
             
-            await asyncio.sleep(5)  # Wait before retrying
+            await asyncio.sleep(2)  # Wait before retrying
         
         logger.error(f"Max retries reached for {email} during {action}")
         return False
