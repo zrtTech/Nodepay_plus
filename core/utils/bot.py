@@ -1,5 +1,6 @@
 # bot.py
 import asyncio
+import traceback
 from typing import List
 from loguru import logger
 import random
@@ -25,13 +26,17 @@ class Bot:
 
     async def process_account(self, account):
         email, password = account.split(':', 1)
+
         while not self.should_stop:
             result = await self.account_manager.mining_loop(email, password)
-            if result:
+            if result is True:
                 # logger.info(f"Account {email} completed mining cycle. Waiting 50 minutes.")
                 await asyncio.sleep(60 * 50)  # Wait 50 minutes
+            elif result == "exit":
+                logger.info(f"{email} | Stop account due to login error")
+                break
             else:
-                logger.warning(f"{email} | Mining failed. Retrying in 5 minutes.")
+                logger.warning(f"{email} | Mining failed. Retrying in 5 minutes. | {traceback.format_exc()}")
                 await asyncio.sleep(300)  # Wait 5 minutes before retry
 
     async def start_mining(self):
@@ -61,13 +66,14 @@ class Bot:
             if self.running_tasks:
                 await asyncio.gather(*self.running_tasks)
         except asyncio.CancelledError:
-            logger.info("Mining tasks cancelled")
+            pass
+            # logger.info("Mining tasks cancelled")
         finally:
             for task in self.running_tasks:
                 if not task.done():
                     task.cancel()
             await asyncio.gather(*self.running_tasks, return_exceptions=True)
-            logger.info("All mining tasks completed or cleaned up")
+            logger.warning("All mining tasks completed or cleaned up")
 
     def stop(self):
         logger.info("Stopping Bot")
@@ -99,26 +105,3 @@ class Bot:
         
         logger.info("Registration process completed")
 
-    async def auth_accounts(self):
-        logger.info("Starting authentication of accounts...")
-        authenticated_accounts = []
-        pending_accounts = self.accounts.copy()
-        
-        while pending_accounts and not self.should_stop:
-            current_batch = []
-            while len(current_batch) < self.threads and pending_accounts:
-                account = pending_accounts.pop(0)
-                email, password = account.split(':', 1)
-                delay = random.uniform(*self.delay_range)
-                logger.info(f"{email} | waiting {delay:.2f} sec")
-                await asyncio.sleep(delay)
-                
-                task = asyncio.create_task(self.account_manager.login_account(email, password))
-                current_batch.append(task)
-            
-            if current_batch:
-                results = await asyncio.gather(*current_batch)
-                authenticated_accounts.extend([r for r in results if r])
-                await asyncio.sleep(1)  # Small delay between batches
-        
-        return authenticated_accounts

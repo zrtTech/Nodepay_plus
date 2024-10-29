@@ -8,7 +8,7 @@ from datetime import datetime
 from faker import Faker
 from loguru import logger
 from core.models.account import Account
-from core.models.exceptions import CloudflareException
+from core.models.exceptions import CloudflareException, LoginError
 from core.nodepay_client import NodePayClient
 from core.captcha import CaptchaService
 from core.utils.file_manager import str_to_file
@@ -83,6 +83,8 @@ class AccountManager:
             user_agent = random_useragent()
             client = None
             try:
+                logger.info(f"{email} | Trying to {action}...")
+
                 client = NodePayClient(email=email, password=password, proxy=proxy_url, user_agent=user_agent)
                 async with client:
                     if action == "register":
@@ -101,9 +103,6 @@ class AccountManager:
                         await client.activate(access_token)
                         str_to_file('data/new_accounts.txt', f'{email}:{password}')
                         logger.success(f'{email} | registered')
-                    elif action == "login":
-                        uid, access_token = await client.login(self.captcha_service)
-                        logger.success(f'{email} | logged in | ')
                     elif action == "mine":
                         uid, access_token = await client.login(self.captcha_service)
                         total_earning = await client.ping(uid, access_token)
@@ -123,15 +122,12 @@ class AccountManager:
             except CloudflareException as e:
                 logger.error(f'{email} | {e} error | Delaying...')
                 await asyncio.sleep(10 * 60)
+            except LoginError as e:
+                logger.warning(f"{email} | Login error: {e}")
+                return "exit"
             except Exception as e:
-                error_message = str(e).lower()
-                if "curl: (7)" in error_message or "cloudflare" in error_message:
-                    logger.error(f'{email} | Proxy failed: {proxy_url} | {e}')
-                elif "unauthorized" in error_message or "token is not valid" in error_message:
-                    logger.warning(f"{email} | invalid token, attempting to refresh")
-                else:
-                    logger.error(f'{email} | {action.capitalize()} error | {e}')
-                    return False
+                logger.error(f"{email} | Unhandled error: {e}")
+                logger.debug(f"{email} | Unhandled error: {e} | {traceback.format_exc()}")
             finally:
                 retry_count += 1
 
@@ -150,9 +146,6 @@ class AccountManager:
 
     async def register_account(self, email: str, password: str):
         return await self.process_account(email, password, "register")
-
-    async def login_account(self, email: str, password: str):
-        return await self.process_account(email, password, "login")
 
     async def mining_loop(self, email: str, password: str):
         logger.info(f"Starting mining for account {email}")

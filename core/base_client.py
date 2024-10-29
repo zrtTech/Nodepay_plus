@@ -76,7 +76,7 @@ class BaseClient:
                 return response_json
 
             except CloudflareException as e:
-                logger.error(f"Cloudflare error: {e}")
+                # logger.error(f"Cloudflare error: {e}")
                 raise
 
             except Exception as e:

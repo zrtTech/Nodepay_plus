@@ -22,7 +22,7 @@ class BotGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("NodePay Bot")
-        self.root.geometry("800x700")
+        self.root.geometry("900x700")
         # self.root.resizable(True, True)
         try:
             favicon = ImageTk.PhotoImage(Image.open("core/static/faviconV2.png"))
@@ -32,7 +32,7 @@ class BotGUI:
         self.config = configparser.ConfigParser()
         self.load_settings()
         self.threads_entry = ctk.CTkEntry(self.root)
-        self.captcha_service_var = ctk.StringVar(value="capsolver")
+        self.captcha_service_var = ctk.StringVar(value="capmonster")
         self.captcha_api_entry = ctk.CTkEntry(self.root)
         self.ref_code_entry = ctk.CTkEntry(self.root)
         self.delay_min_entry = ctk.CTkEntry(self.root)
@@ -134,7 +134,7 @@ class BotGUI:
         self.captcha_label, self.captcha_menu = self.create_input_field("Captcha:", ctk.CTkOptionMenu(
             self.input_frame,
             variable=self.captcha_service_var,
-            values=["2captcha", "anticaptcha", "capsolver", "capmonster", "captchaai"],
+            values=["capmonster"],  # "2captcha", "anticaptcha", "capsolver",
             width=120,
             text_color="#000",
         ))
@@ -385,7 +385,7 @@ class BotGUI:
                 'ProxiesFile': '',
                 'ReferralCodes': '',
                 'Threads': '5',
-                'CaptchaService': '2captcha',
+                'CaptchaService': 'capmonster',
                 'CaptchaAPIKey': '',
                 'DelayMin': '1',
                 'DelayMax': '2'
@@ -462,10 +462,7 @@ class BotGUI:
                 proxy_path=self.proxies_path,
                 threads=int(self.threads_entry.get()),
                 ref_codes=ref_codes,
-                captcha_service=CaptchaService(
-                    service=self.captcha_service_var.get(),
-                    api_key=self.captcha_api_entry.get()
-                ),
+                captcha_service=CaptchaService(api_key=self.captcha_api_entry.get()),
                 delay_range=(delay_min, delay_max)
             )
             self.bot_thread = threading.Thread(target=asyncio.run, args=(self.bot.start_registration(),), daemon=True)
@@ -486,10 +483,7 @@ class BotGUI:
                 proxy_path=self.proxies_path,
                 threads=int(self.threads_entry.get()),
                 ref_codes=ref_codes,
-                captcha_service=CaptchaService(
-                    service=self.captcha_service_var.get(),
-                    api_key=self.captcha_api_entry.get()
-                ),
+                captcha_service=CaptchaService(api_key=self.captcha_api_entry.get()),
                 delay_range=(delay_min, delay_max)
             )
             self.bot_thread = threading.Thread(target=asyncio.run, args=(self.bot.start_mining(),), daemon=True)

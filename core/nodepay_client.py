@@ -1,11 +1,10 @@
 import time
 import uuid
 import warnings
-import random
-
 from random_username.generate import generate_username
 
 from core.base_client import BaseClient
+from core.models.exceptions import LoginError
 
 # Suppress the specific warning
 warnings.filterwarnings("ignore", category=UserWarning, message="Curlm alread closed!")
@@ -79,6 +78,13 @@ class NodePayClient(BaseClient):
             headers=headers,
             json_data=json_data
         )
+
+        if not response.get("success"):
+            msg = response.get("msg")
+            # if response.get("code") == -102:
+            #     raise LoginError(msg)
+
+            raise LoginError(msg)
 
         return response['data']['user_info']['uid'], response['data']['token']
 

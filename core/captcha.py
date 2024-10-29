@@ -1,30 +1,22 @@
 import asyncio
-import captchatools
-from loguru import logger
+from capmonster_python import TurnstileTask
 
 CAPTCHA_PARAMS = {
-    'captcha_type': 'v2',
-    'invisible_captcha': False,
-    'sitekey': '6LdvcaMpAAAAACOZ6vyOh-V5zyl56NwvseDsWrH_',
-    'captcha_url': 'https://app.nodepay.ai/'
+    'website_key': '0x4AAAAAAAx1CyDNL8zOEPe7',
+    'website_url': 'https://app.nodepay.ai/login'
 }
 
-
 class CaptchaService:
-    def __init__(self, service, api_key):
-        self.api_key = api_key
-        self.service = service
+    def __init__(self, api_key):
+        self.capmonster = TurnstileTask(api_key)
 
     def get_captcha_token(self):
-        captcha_config = self.parse_captcha_type()
-        solver = captchatools.new_harvester(**captcha_config, **CAPTCHA_PARAMS)
-        return solver.get_token()
-
-    def parse_captcha_type(self):
-        return {'solving_site': self.service, 'api_key': self.api_key}
+        task_id = self.capmonster.create_task(
+            **CAPTCHA_PARAMS
+        )
+        return self.capmonster.join_task_result(task_id).get("token")
 
     async def get_captcha_token_async(self):
-        logger.info('Sending captcha')
         return await asyncio.to_thread(self.get_captcha_token)
 
     # Add alias for compatibility
