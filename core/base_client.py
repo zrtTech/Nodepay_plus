@@ -58,7 +58,6 @@ class BaseClient:
                     timeout=30,
                     proxy=self.proxy
                 )
-
                 if response.status_code in [403, 400]:
                     raise CloudflareException('Cloudflare protection detected')
                 

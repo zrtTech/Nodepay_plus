@@ -10,7 +10,6 @@ from loguru import logger
 from core.models.account import Account
 from core.models.exceptions import CloudflareException, LoginError
 from core.nodepay_client import NodePayClient
-from core.captcha import CaptchaService
 from core.utils.file_manager import str_to_file
 from core.utils.proxy_manager import get_proxy, release_proxy
 from pyuseragents import random as random_useragent
@@ -68,7 +67,7 @@ class AccountManager:
 
         # Replace original file
         os.replace(temp_file, self.earnings_file)
-        logger.info(f"Updated earnings for {email}: {total_earning}")
+        # logger.info(f"Updated earnings for {email}: {total_earning}")
 
     async def process_account(self, email: str, password: str, action: str):
         if self.should_stop:
@@ -83,7 +82,7 @@ class AccountManager:
             user_agent = random_useragent()
             client = None
             try:
-                logger.info(f"{email} | Trying to {action}...")
+                logger.info(f"{email} | {action.capitalize()}")
 
                 client = NodePayClient(email=email, password=password, proxy=proxy_url, user_agent=user_agent)
                 async with client:
@@ -101,7 +100,7 @@ class AccountManager:
 
                         uid, access_token = await client.login(self.captcha_service)
                         await client.activate(access_token)
-                        str_to_file('data/new_accounts.txt', f'{email}:{password}')
+                        str_to_file('new_accounts.txt', f'{email}:{password}')
                         logger.success(f'{email} | registered')
                     elif action == "mine":
                         uid, access_token = await client.login(self.captcha_service)

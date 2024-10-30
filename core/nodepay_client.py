@@ -2,6 +2,7 @@ import time
 import uuid
 import warnings
 from random_username.generate import generate_username
+from tenacity import retry, stop_after_attempt, retry_if_not_exception_type
 
 from core.base_client import BaseClient
 from core.models.exceptions import LoginError
@@ -17,7 +18,7 @@ class NodePayClient(BaseClient):
         self.password = password
         self.user_agent = user_agent
         self.proxy = proxy
-        self.browser_id = str(uuid.uuid3(uuid.NAMESPACE_DNS, proxy))
+        self.browser_id = str(uuid.uuid3(uuid.NAMESPACE_DNS, self.proxy or ""))
 
     async def __aenter__(self):
         await self.create_session(self.proxy, self.user_agent)
@@ -28,15 +29,27 @@ class NodePayClient(BaseClient):
 
     def _auth_headers(self):
         return {
+            # 'accept': '*/*',
+            # 'accept-language': 'en-US,en;q=0.9',
+            # 'content-type': 'application/json',
+            # 'origin': 'chrome-extension://lgmpfmgeabnnlemejacfljbmonaomfmm',
+            # 'priority': 'u=1, i',
+            # 'sec-fetch-dest': 'empty',
+            # 'sec-fetch-mode': 'cors',
+            # 'sec-fetch-site': 'none',
             'accept': '*/*',
             'accept-language': 'en-US,en;q=0.9',
             'content-type': 'application/json',
-            'origin': 'chrome-extension://lgmpfmgeabnnlemejacfljbmonaomfmm',
+            'origin': 'https://app.nodepay.ai',
             'priority': 'u=1, i',
+            'referer': 'https://app.nodepay.ai/',
+            'sec-ch-ua': '"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
             'sec-fetch-dest': 'empty',
             'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'none',
-            'user-agent': self.user_agent,
+            'sec-fetch-site': 'cross-site',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
         }
 
     def _ping_headers(self, access_token: str):
@@ -61,6 +74,10 @@ class NodePayClient(BaseClient):
             json_data=json_data
         )
 
+    @retry(
+        stop=stop_after_attempt(5),
+        retry=retry_if_not_exception_type(LoginError)
+    )
     async def login(self, captcha_service):
         captcha_token = await captcha_service.get_captcha_token_async()
         headers = self._auth_headers()
@@ -74,7 +91,7 @@ class NodePayClient(BaseClient):
 
         response = await self.make_request(
             method='POST',
-            url='https://api.nodepay.org/api/auth/login?',
+            url='https://api.nodepay.org/api/auth/login',
             headers=headers,
             json_data=json_data
         )
@@ -112,7 +129,7 @@ class NodePayClient(BaseClient):
             'timestamp': int(time.time()),
             'version': '2.2.7'
         }
-        
+
         await self.make_request(
             method='POST',
             url='https://nw.nodepay.org/api/network/ping',
