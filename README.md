@@ -8,6 +8,7 @@ Discover the latest `<crypto/>` moves in my Telegram Channel:
 Cheapest [proxies and servers](https://teletype.in/@web3enjoyer/4a2G9NuHssy) which fits for bot.
 
 ![image](https://img4.teletype.in/files/3b/88/3b886c4d-5b54-4463-bddd-3ce86342d666.png)
+### Also can be useful: [Grass Farmer](https://github.com/MsLolita/grass)
 
 
 ### What is bot for?
