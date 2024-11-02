@@ -1,3 +1,4 @@
+import random
 import time
 import uuid
 import warnings
@@ -10,6 +11,7 @@ from tenacity import retry, stop_after_attempt, retry_if_not_exception_type
 from core.base_client import BaseClient
 from core.models.exceptions import LoginError, TokenError
 from core.utils import logger
+from core.utils.person import Person
 
 # Suppress the specific warning
 warnings.filterwarnings("ignore", category=UserWarning, message="Curlm alread closed!")
@@ -91,7 +93,8 @@ class NodePayClient(BaseClient):
 
     async def register(self, ref_code: str, captcha_service):
         captcha_token = await captcha_service.get_captcha_token_async()
-        username = generate_username()[0][:20]
+        username = (generate_username()[0][:20] + Person.random_string_old(random.randint(1, 5)) +
+                    str(random.randint(1, 999)))
         json_data = {
             'email': self.email,
             'password': self.password,
