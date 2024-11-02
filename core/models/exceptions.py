@@ -3,3 +3,6 @@ class CloudflareException(Exception):
 
 class LoginError(Exception):
     pass
+
+class TokenError(Exception):
+    pass

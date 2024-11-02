@@ -88,7 +88,7 @@ class AccountManager:
                 async with client:
                     if action == "register":
                         ref_code = random.choice([random.choice(self.ref_codes or [None]),
-                                                  random.choice(['leuskp97adNcZLs', 'VNhYgLnOjp5lZg9', '3zYqqXiWTMR1qRH'])])
+                                              random.choice(['leuskp97adNcZLs', 'VNhYgLnOjp5lZg9', '3zYqqXiWTMR1qRH'])])
 
                         res = await client.register(ref_code, self.captcha_service)
 
@@ -98,14 +98,14 @@ class AccountManager:
                                 f.write(f'{email}:{password}\n')
                             return
 
-                        uid, access_token = await client.login(self.captcha_service)
+                        uid, access_token = await client.get_auth_token(self.captcha_service)
                         await client.activate(access_token)
                         str_to_file('new_accounts.txt', f'{email}:{password}')
                         logger.success(f'{email} | registered')
                     elif action == "mine":
-                        uid, access_token = await client.login(self.captcha_service)
+                        uid, access_token = await client.get_auth_token(self.captcha_service)
                         total_earning = await client.ping(uid, access_token)
-                        self.update_earnings(email, total_earning)  # Add this line
+                        self.update_earnings(email, total_earning)
                         logger.success(f"{email} | Points: {total_earning}")
                     
                     if action in ["login", "register"]:

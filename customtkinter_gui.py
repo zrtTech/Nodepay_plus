@@ -13,7 +13,7 @@ import random
 import csv
 from datetime import datetime
 
-CONFIG_FILE = "settings.ini"
+CONFIG_FILE = "data/settings.ini"
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("dark-blue")
