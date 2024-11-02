@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 from faker import Faker
-from loguru import logger
+from core.utils import logger
 from core.models.account import Account
 from core.models.exceptions import CloudflareException, LoginError
 from core.nodepay_client import NodePayClient

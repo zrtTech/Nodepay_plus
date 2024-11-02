@@ -1,17 +1,15 @@
 import customtkinter as ctk
-from tkinter import filedialog, messagebox, Text, END, Frame, LEFT, RIGHT
+from tkinter import filedialog, messagebox, Text, END
 import configparser
 import os
 import webbrowser
-from loguru import logger
+from core.utils import logger
 import threading
 import asyncio
 from core.utils.bot import Bot
 from core.captcha import CaptchaService
 from PIL import Image, ImageTk
-import random
 import csv
-from datetime import datetime
 
 CONFIG_FILE = "data/settings.ini"
 

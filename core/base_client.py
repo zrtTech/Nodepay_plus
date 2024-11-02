@@ -1,6 +1,6 @@
 import json
 
-from loguru import logger
+from core.utils import logger
 from curl_cffi.requests import AsyncSession
 
 from core import proofing

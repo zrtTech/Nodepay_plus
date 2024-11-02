@@ -2,7 +2,7 @@
 import asyncio
 import traceback
 from typing import List
-from loguru import logger
+from core.utils import logger
 import random
 from core.utils import proxy_manager
 from core.utils.account_manager import AccountManager

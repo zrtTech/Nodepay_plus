@@ -3,11 +3,13 @@ import uuid
 import warnings
 import json
 import os
+
 from random_username.generate import generate_username
 from tenacity import retry, stop_after_attempt, retry_if_not_exception_type
 
 from core.base_client import BaseClient
 from core.models.exceptions import LoginError, TokenError
+from core.utils import logger
 
 # Suppress the specific warning
 warnings.filterwarnings("ignore", category=UserWarning, message="Curlm alread closed!")
@@ -107,7 +109,9 @@ class NodePayClient(BaseClient):
 
     @retry(
         stop=stop_after_attempt(5),
-        retry=retry_if_not_exception_type(LoginError)
+        retry=retry_if_not_exception_type(LoginError),
+        reraise=True,
+        # before_sleep=lambda retry_state, **kwargs: logger.info(f"{retry_state.outcome.exception()}"),
     )
     async def login(self, captcha_service):
         captcha_token = await captcha_service.get_captcha_token_async()
@@ -158,6 +162,7 @@ class NodePayClient(BaseClient):
         
         if saved_token:
             if await self.validate_token(saved_token):
+                print(self.email)
                 return saved_uid, saved_token
 
         uid, token = await self.login(captcha_service)
