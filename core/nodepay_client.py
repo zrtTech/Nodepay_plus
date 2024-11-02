@@ -162,7 +162,6 @@ class NodePayClient(BaseClient):
         
         if saved_token:
             if await self.validate_token(saved_token):
-                print(self.email)
                 return saved_uid, saved_token
 
         uid, token = await self.login(captcha_service)
