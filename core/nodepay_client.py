@@ -93,8 +93,8 @@ class NodePayClient(BaseClient):
 
     async def register(self, ref_code: str, captcha_service):
         captcha_token = await captcha_service.get_captcha_token_async()
-        username = (generate_username()[0][:20] + Person.random_string_old(random.randint(1, 5)) +
-                    str(random.randint(1, 999)))
+        username = (generate_username()[0] + Person.random_string_old(random.randint(1, 5)) +
+                    str(random.randint(1, 999)))[:20]
         json_data = {
             'email': self.email,
             'password': self.password,
