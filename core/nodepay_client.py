@@ -9,7 +9,7 @@ from random_username.generate import generate_username
 from tenacity import retry, stop_after_attempt, retry_if_not_exception_type
 
 from core.base_client import BaseClient
-from core.models.exceptions import LoginError, TokenError
+from core.models.exceptions import LoginError, TokenError, CloudflareException
 from core.utils import logger
 from core.utils.person import Person
 
@@ -60,6 +60,8 @@ class NodePayClient(BaseClient):
             # Try to use the token to get info - if it fails, token is invalid
             await self.info(token)
             return True
+        except CloudflareException as e:
+            raise CloudflareException(e)
         except Exception:
             return False
 
