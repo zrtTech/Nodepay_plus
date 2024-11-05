@@ -7,7 +7,7 @@ from core.utils import logger
 import threading
 import asyncio
 from core.utils.bot import Bot
-from core.captcha import CaptchaService
+from core.captcha import ServiceAnticaptcha, ServiceCapmonster
 from PIL import Image, ImageTk
 import csv
 
@@ -39,6 +39,11 @@ class BotGUI:
         self.bot = None
         self.bot_thread = None
         self.running = False
+        self.CaptchaService = None
+    
+    # Callback to check if it's updated correctly
+    def on_captcha_service_change(self, value):
+        logger.debug(f"Captcha service updated to: {value}")
 
     def create_widgets(self):
         self.root.configure(bg="#F1F3FF")
@@ -132,9 +137,10 @@ class BotGUI:
         self.captcha_label, self.captcha_menu = self.create_input_field("Captcha:", ctk.CTkOptionMenu(
             self.input_frame,
             variable=self.captcha_service_var,
-            values=["capmonster"],  # "2captcha", "anticaptcha", "capsolver",
+            values=["capmonster","anticaptcha"],  # "2captcha", "anticaptcha", "capsolver",
             width=120,
             text_color="#000",
+            command=self.on_captcha_service_change
         ))
         self.captcha_label.grid(row=0, column=0, sticky="w", pady=5, padx=(0, 5))
         self.captcha_menu.grid(row=0, column=1, sticky="w", pady=5)
@@ -448,6 +454,11 @@ class BotGUI:
         self.log_box.see(END)
 
     def register_accounts(self):
+        captcha_service_var = self.captcha_service_var.get()
+        if captcha_service_var == 'anticaptcha':
+            self.CaptchaService = ServiceAnticaptcha
+        elif captcha_service_var == 'capmonster':
+            self.CaptchaService = ServiceCapmonster
         if not self.validate_inputs():
             return
         self.save_settings()
@@ -460,15 +471,19 @@ class BotGUI:
                 proxy_path=self.proxies_path,
                 threads=int(self.threads_entry.get()),
                 ref_codes=ref_codes,
-                captcha_service=CaptchaService(api_key=self.captcha_api_entry.get()),
-                delay_range=(delay_min, delay_max)
-            )
+                captcha_service=self.CaptchaService(api_key=self.captcha_api_entry.get()),
+                delay_range=(delay_min, delay_max))
             self.bot_thread = threading.Thread(target=asyncio.run, args=(self.bot.start_registration(),), daemon=True)
             self.bot_thread.start()
             self.running = True
             logger.info("Started account registration with slow start.")
 
     def start_mining(self):
+        captcha_service_var = self.captcha_service_var.get()
+        if captcha_service_var == 'anticaptcha':
+            self.CaptchaService = ServiceAnticaptcha
+        elif captcha_service_var == 'capmonster':
+            self.CaptchaService = ServiceCapmonster
         if not self.validate_inputs():
             return
         self.save_settings()
@@ -481,7 +496,7 @@ class BotGUI:
                 proxy_path=self.proxies_path,
                 threads=int(self.threads_entry.get()),
                 ref_codes=ref_codes,
-                captcha_service=CaptchaService(api_key=self.captcha_api_entry.get()),
+                captcha_service=self.CaptchaService(api_key=self.captcha_api_entry.get()),
                 delay_range=(delay_min, delay_max)
             )
             self.bot_thread = threading.Thread(target=asyncio.run, args=(self.bot.start_mining(),), daemon=True)
