@@ -6,7 +6,7 @@ CAPTCHA_PARAMS = {
     'website_url': 'https://app.nodepay.ai/login'
 }
 
-class CaptchaService:
+class ServiceCapmonster:
     def __init__(self, api_key):
         self.capmonster = TurnstileTask(api_key)
 
@@ -15,6 +15,29 @@ class CaptchaService:
             **CAPTCHA_PARAMS
         )
         return self.capmonster.join_task_result(task_id).get("token")
+
+    async def get_captcha_token_async(self):
+        return await asyncio.to_thread(self.get_captcha_token)
+
+    # Add alias for compatibility
+    async def solve_captcha(self):
+        return await self.get_captcha_token_async()
+
+from anticaptchaofficial.turnstileproxyless import *
+
+class ServiceAnticaptcha:
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.solver = turnstileProxyless()
+        self.solver.set_verbose(1)
+        self.solver.set_key(self.api_key)
+        self.solver.set_website_url(CAPTCHA_PARAMS['website_url'])    
+        self.solver.set_website_key(CAPTCHA_PARAMS['website_key'])
+        self.solver.set_action("login")
+    
+    def get_captcha_token(self):
+        captcha_token = self.solver.solve_and_return_solution()
+        return captcha_token
 
     async def get_captcha_token_async(self):
         return await asyncio.to_thread(self.get_captcha_token)
