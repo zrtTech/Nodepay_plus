@@ -1,5 +1,6 @@
 import asyncio
 from capmonster_python import TurnstileTask
+from twocaptcha import TwoCaptcha
 
 CAPTCHA_PARAMS = {
     'website_key': '0x4AAAAAAAx1CyDNL8zOEPe7',
@@ -37,6 +38,21 @@ class ServiceAnticaptcha:
     
     def get_captcha_token(self):
         captcha_token = self.solver.solve_and_return_solution()
+        return captcha_token
+
+    async def get_captcha_token_async(self):
+        return await asyncio.to_thread(self.get_captcha_token)
+
+    # Add alias for compatibility
+    async def solve_captcha(self):
+        return await self.get_captcha_token_async()
+
+class Service2Captcha:
+    def __init__(self, api_key):
+        self.solver = TwoCaptcha(api_key)
+    
+    def get_captcha_token(self):
+        captcha_token = self.solver.turnstile(sitekey=CAPTCHA_PARAMS['website_key'], url=CAPTCHA_PARAMS['website_url'])
         return captcha_token
 
     async def get_captcha_token_async(self):
