@@ -7,7 +7,7 @@ from core.utils import logger
 import threading
 import asyncio
 from core.utils.bot import Bot
-from core.captcha import ServiceAnticaptcha, ServiceCapmonster
+from core.captcha import ServiceAnticaptcha, ServiceCapmonster, Service2Captcha
 from PIL import Image, ImageTk
 import csv
 
@@ -137,7 +137,7 @@ class BotGUI:
         self.captcha_label, self.captcha_menu = self.create_input_field("Captcha:", ctk.CTkOptionMenu(
             self.input_frame,
             variable=self.captcha_service_var,
-            values=["capmonster","anticaptcha"],  # "2captcha", "anticaptcha", "capsolver",
+            values=["capmonster","anticaptcha", "2captcha"],  # "2captcha", "anticaptcha", "capsolver",
             width=120,
             text_color="#000",
             command=self.on_captcha_service_change
@@ -459,6 +459,8 @@ class BotGUI:
             self.CaptchaService = ServiceAnticaptcha
         elif captcha_service_var == 'capmonster':
             self.CaptchaService = ServiceCapmonster
+        elif captcha_service_var == '2captcha':
+            self.CaptchaService = Service2Captcha
         if not self.validate_inputs():
             return
         self.save_settings()
@@ -484,6 +486,8 @@ class BotGUI:
             self.CaptchaService = ServiceAnticaptcha
         elif captcha_service_var == 'capmonster':
             self.CaptchaService = ServiceCapmonster
+        elif captcha_service_var == '2captcha':
+            self.CaptchaService = Service2Captcha
         if not self.validate_inputs():
             return
         self.save_settings()
